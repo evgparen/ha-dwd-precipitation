@@ -2,6 +2,10 @@
 
 # DWD Precipitation
 
+> Modified 2026-09-12: this working copy is a maintained-fork development branch.
+> See [FORK.md](FORK.md) for its changes, tests, and release status. The upstream
+> installation links below still refer to Hoffmann77's original project.
+
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
 [![GitHub Release](https://img.shields.io/github/v/release/Hoffmann77/ha-dwd-precipitation)](https://github.com/Hoffmann77/ha-dwd-precipitation/releases/latest)
 [![GitHub Downloads](https://img.shields.io/github/downloads/Hoffmann77/ha-dwd-precipitation/total)](https://github.com/Hoffmann77/ha-dwd-precipitation/releases)

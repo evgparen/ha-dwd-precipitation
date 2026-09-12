@@ -1,5 +1,11 @@
 # DWD Precipitation — Codebase Guide
 
+> Modified 2026-09-12 for the maintained fork: see FORK.md first. Some inherited
+> sections below describe the old multi-product/polling architecture. The current
+> code uses one BaseProductUpdateCoordinator per product, an event-driven normal
+> schedule, and 60-second retries on failure. Products implement _fetch_and_parse;
+> the coordinator owns curr_release, stale checks, and the retry lifecycle.
+
 ## What this is
 
 A HomeAssistant custom component that pulls DWD (German Weather Service) radar composites and exposes per-location precipitation sensors. It fetches Cartesian grids, finds the nearest grid cell to the user's configured lat/lon, and reports the cell value.

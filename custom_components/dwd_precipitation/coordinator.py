@@ -1,4 +1,8 @@
-"""Data update coordinator for the dwd precipitation integration."""
+"""Data update coordinator for the dwd precipitation integration.
+
+Modified in the maintained fork, 2026-09-12: preserve retries during stale
+failures and describe HTTP 404 without assuming its cause.
+"""
 
 from __future__ import annotations
 
@@ -40,9 +44,9 @@ def _describe_fetch_error(err: Exception, release: datetime) -> str:
     if isinstance(err, aiohttp.ClientResponseError):
         if err.status == HTTPStatus.NOT_FOUND:
             return (
-                f"DWD has not published the {release_str} release yet "
-                "(HTTP 404). This is normal near release time; it will be "
-                "retried automatically."
+                f"DWD OpenData returned HTTP 404 for the {release_str} release. "
+                "The requested file was not available at this request; "
+                "automatic retries use a 60-second interval."
             )
         return (
             f"DWD OpenData returned HTTP {err.status} ({err.message}) for the "
@@ -275,7 +279,9 @@ class BaseProductUpdateCoordinator(DataUpdateCoordinator[CoordinatorData], ABC):
                 CONF_UNAVAILABLE_WHEN_STALE, True
             )
             if self.data is None or (unavailable_when_stale and self._data_is_stale(now)):
-                self._stop_fast_polling()
+                # A first failure just past the next release boundary is already
+                # stale. Keep retrying so late files are not skipped forever.
+                self._start_fast_polling()
                 raise UpdateFailed(_describe_fetch_error(err, latest_release)) from err
 
             # Data is still fresh enough — retry silently
