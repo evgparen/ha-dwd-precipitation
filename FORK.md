@@ -65,8 +65,11 @@ its predecessor's component directory and restarting Core, then repair the HACS
 installation source to match. Restore unrelated config/registries only if needed.
 
 Future upstream changes are reviewed and merged into this fork before release;
-site updates follow the fork's own release tags. CI runs on code changes or manual
-request; inherited scheduled issue-posting jobs were disabled in this fork.
+site updates follow the fork's own release tags. GitHub Actions remains disabled
+for this fork: the publishing credential has repository access but no workflow
+scope. Inherited workflow files are unchanged. The release was validated locally
+with all test tiers; future workflow changes require an appropriately scoped
+credential. No inherited scheduled issue-posting job runs in this fork.
 
 Site-specific rain closure schedules, stored plans, entity names, credentials,
 and site coordinates belong in each installation, not in this reusable source.

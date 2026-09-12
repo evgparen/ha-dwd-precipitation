@@ -7,6 +7,6 @@ Modified 2026-09-12 by the evgparen fork:
 - manifest.json and hacs.json: fork version, name, maintainer, support URLs.
 - pyproject.toml and uv.lock: release version and HA 2026.9.1 test dependency.
 - tests: outage regression tests and RV/HymecNG live-source coverage.
-- documentation and workflows: fork instructions and validation configuration.
+- documentation: fork instructions and validation results.
 
 Upstream authors do not maintain or endorse this fork.

@@ -1,14 +1,16 @@
-# Modified 2026-09-12: fork checks run on changes or manual dispatch; no scheduled issue posting.
 name: HA version compatibility
 
 # Version-drift monitor: runs the integration tier against the pinned, latest,
 # and dev pytest-homeassistant-custom-component (which tracks HA releases).
 # Scheduled (never gates PRs); opens/updates a tracking issue on failure.
 on:
+  schedule:
+    - cron: "0 5 * * 1"   # weekly, Monday 05:00 UTC
   workflow_dispatch:
 
 permissions:
   contents: read
+  issues: write
 
 jobs:
   ha-compat:
@@ -20,7 +22,7 @@ jobs:
       matrix:
         include:
           - name: pinned
-            phacc: "==0.13.364"
+            phacc: "==0.13.336"
             ha_dev: false
             experimental: false
           - name: latest
@@ -49,3 +51,18 @@ jobs:
       - name: Run integration tests
         # --no-sync so the manual version override above is not reverted by uv run.
         run: uv run --no-sync pytest tests/integration -v
+
+      - name: Open / update tracking issue on failure
+        if: ${{ failure() && !matrix.experimental }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          TITLE="HA compatibility check failing (${{ matrix.name }})"
+          BODY="The integration tier failed against the ${{ matrix.name }} pytest-homeassistant-custom-component. A newer HA release may have broken the integration. Run: $RUN_URL"
+          num=$(gh issue list --state open --search "$TITLE in:title" --json number --jq '.[0].number // empty')
+          if [ -n "$num" ]; then
+            gh issue comment "$num" --body "$BODY"
+          else
+            gh issue create --title "$TITLE" --body "$BODY"
+          fi
