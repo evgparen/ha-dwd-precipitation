@@ -1,11 +1,10 @@
+# Modified 2026-09-12: fork checks run on changes or manual dispatch; no scheduled issue posting.
 name: Validate with hassfest
 
 on:
   push:
   pull_request:
   workflow_dispatch:
-  schedule:
-    - cron:  '0 0 * * *'
 
 jobs:
   validate:

@@ -1,13 +1,13 @@
 {
   "domain": "dwd_precipitation",
-  "name": "DWD Precipitation",
-  "codeowners": ["@Hoffmann77"],
+  "name": "DWD Precipitation (Reliable Fork)",
+  "codeowners": ["@evgparen"],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/Hoffmann77/dwd_precipitation",
+  "documentation": "https://github.com/evgparen/ha-dwd-precipitation",
   "integration_type": "hub",
   "iot_class": "cloud_polling",
-  "issue_tracker": "https://github.com/Hoffmann77/dwd_precipitation/issues",
+  "issue_tracker": "https://github.com/evgparen/ha-dwd-precipitation/issues",
   "requirements": ["numpy", "h5py>=3.11"],
-  "version": "2026.8.0rc1"
+  "version": "2026.9.12.1"
 }

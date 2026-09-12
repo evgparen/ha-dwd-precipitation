@@ -1,6 +1,6 @@
 # Maintained DWD Precipitation fork
 
-Development snapshot started 2026-09-12. Upstream is
+Release 2026.9.12.1, maintained at https://github.com/evgparen/ha-dwd-precipitation. Upstream is
 https://github.com/Hoffmann77/ha-dwd-precipitation, based on commit
 `9d6f0098df53edf20ec0478c0aa7dd6ea5a04a55` (2026.8.0rc1).
 The original Apache-2.0 license and embedded parser attribution are retained.
@@ -31,27 +31,42 @@ isolated Python process, without network or actuator calls:
 PYTHONPATH=. python tests/integration/test_retry_regression.py
 ```
 
-Validation on 2026-09-12: all 10 new regression tests passed in an isolated
-Python process using the Home Assistant 2026.9.1 container environment. The
-staged source was imported from a temporary directory, not from live /config.
+Validation on 2026-09-12:
 
-The upstream pytest tiers remain available via the dependency groups in
-`pyproject.toml`. A focused regression pass is not a full HA reload, parser,
-or long-term field certification. Upstream code and existing tests may contain
-other defects; this fork makes no promise of being error-free.
+- 63 parser tests passed.
+- 76 integration tests and 5 subtests passed with Home Assistant 2026.9.1,
+  including all 10 new retry regressions. The same integration tests also
+  passed against the original HA 2026.8.0 dependency set.
+- 4 comparisons against wradlib passed.
+- 5 live DWD download/parser tests passed: RS, RV (all 25 members), HymecNG,
+  RW and SF. Live tests prove source/parser access, not forecast accuracy.
 
-## Release and installation status
+Inherited NumPy deprecation and the HA-free pytest tier's unused asyncio option
+produce warnings, not failures. This is not a guarantee against future HA/DWD
+changes or incorrect weather forecasts.
 
-This is a separate local development branch, not a published GitHub fork or a
-production release. The manifest remains at the upstream version until a release
-is prepared. There is no new deployment as part of creating this branch.
-Existing HA installations retain their current code and configuration.
+## Installation and updates
 
-Before distribution, assign a distinct fork version and maintainer/support
-metadata, run the full relevant test tiers and HA config/reload checks, prepare a
-rollback artifact, then switch the installation source. Never manage two HACS
-repositories for the same `dwd_precipitation` domain simultaneously.
-Check future upstream updates before merging them into this branch.
+The component uses the existing domain `dwd_precipitation` and preserves unique
+IDs and configuration. It replaces an existing installation; do not install two
+implementations of this domain side by side.
+
+1. Back up the component and site configuration; record entity IDs and options.
+2. Add `https://github.com/evgparen/ha-dwd-precipitation` as a HACS custom
+   integration repository.
+3. For a migration, uninstall the upstream repository in HACS, then immediately
+   download this fork's release. Keep the DWD integration/config entry itself.
+4. Check the Home Assistant configuration and restart Home Assistant Core.
+5. Verify the loaded version, config entry, all existing entity IDs, fresh source
+   timestamps, and the site's dependent automation. Check logs after startup.
+
+HACS should show only the fork installed for this domain. Roll back by restoring
+its predecessor's component directory and restarting Core, then repair the HACS
+installation source to match. Restore unrelated config/registries only if needed.
+
+Future upstream changes are reviewed and merged into this fork before release;
+site updates follow the fork's own release tags. CI runs on code changes or manual
+request; inherited scheduled issue-posting jobs were disabled in this fork.
 
 Site-specific rain closure schedules, stored plans, entity names, credentials,
 and site coordinates belong in each installation, not in this reusable source.

@@ -1,0 +1,12 @@
+DWD Precipitation (Reliable Fork)
+Based on Hoffmann77/ha-dwd-precipitation, Apache License 2.0.
+Original license and embedded wradlib parser attribution are retained.
+
+Modified 2026-09-12 by the evgparen fork:
+- coordinator.py: retries continue on initial/stale failures; neutral 404 text.
+- manifest.json and hacs.json: fork version, name, maintainer, support URLs.
+- pyproject.toml and uv.lock: release version and HA 2026.9.1 test dependency.
+- tests: outage regression tests and RV/HymecNG live-source coverage.
+- documentation and workflows: fork instructions and validation configuration.
+
+Upstream authors do not maintain or endorse this fork.

@@ -1,5 +1,7 @@
 """Live source-liveness smoke tests — download & parse real DWD OpenData files.
 
+Modified 2026-09-12: include RV's 25 members and HymecNG in live coverage.
+
 Network-dependent and scheduled (never gates PRs). Marked @live; run with:
   uv run --group unit-test pytest tests/live -m live -v
 
@@ -23,7 +25,7 @@ import numpy as np
 import pytest
 import requests
 
-from radar import read_odim_composite, read_radolan_composite
+from radar import read_odim_classification, read_odim_composite, read_radolan_composite
 
 _OPENDATA = "https://opendata.dwd.de/weather/radar"
 
@@ -64,7 +66,41 @@ def _parse_radolan(content: bytes, _ts: datetime) -> np.ndarray:
     return data
 
 
+def _parse_rv(content: bytes, ts: datetime) -> np.ndarray:
+    prefix = f"composite_rv_{ts.strftime('%Y%m%d_%H%M')}"
+    with tarfile.open(fileobj=io.BytesIO(content)) as tf:
+        for lead in range(0, 121, 5):
+            member = tf.extractfile(f"{prefix}_{lead:03d}-hd5")
+            assert member is not None
+            data, _ = read_odim_composite(io.BytesIO(member.read()))
+            assert data.shape == (1200, 1100)
+    return data
+
+
+def _parse_hymecng(content: bytes, _ts: datetime) -> np.ndarray:
+    data, _, _ = read_odim_classification(io.BytesIO(content))
+    return data
+
+
 _PRODUCTS = {
+    "rv": {
+        "candidates": _rs_candidates,
+        "url": lambda ts: (
+            f"{_OPENDATA}/composite/rv/composite_rv_{ts.strftime('%Y%m%d_%H%M')}.tar"
+        ),
+        "parse": _parse_rv,
+        "shape": (1200, 1100),
+    },
+    "hymecng": {
+        "candidates": _rs_candidates,
+        "url": lambda ts: (
+            f"{_OPENDATA}/composite/hymecng/"
+            f"composite_HymecNG_{ts.strftime('%Y%m%d_%H%M')}_000-hd5"
+        ),
+        "parse": _parse_hymecng,
+        "shape": (1200, 1100),
+        "dtype": np.integer,
+    },
     "rs": {
         "candidates": _rs_candidates,
         "url": lambda ts: (
@@ -115,8 +151,8 @@ def test_live_download_and_parse(product_id: str) -> None:
         assert data.shape == product["shape"], (
             f"{product_id}: unexpected grid shape {data.shape} from {url}"
         )
-        assert np.issubdtype(data.dtype, np.floating), (
-            f"{product_id}: expected floating data, got {data.dtype}"
+        assert np.issubdtype(data.dtype, product.get("dtype", np.floating)), (
+            f"{product_id}: unexpected dtype {data.dtype}"
         )
         assert data.size > 0
         return

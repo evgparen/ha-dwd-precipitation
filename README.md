@@ -2,15 +2,17 @@
 
 # DWD Precipitation
 
-> Modified 2026-09-12: this working copy is a maintained-fork development branch.
-> See [FORK.md](FORK.md) for its changes, tests, and release status. The upstream
-> installation links below still refer to Hoffmann77's original project.
+> Maintained fork by [evgparen](https://github.com/evgparen), based on
+> [Hoffmann77/ha-dwd-precipitation](https://github.com/Hoffmann77/ha-dwd-precipitation).
+> Version **2026.9.12.1** keeps retrying late DWD files while preserving stale-data
+> protection. See [FORK.md](FORK.md) for changes, validation and migration.
+> Modified 2026-09-12; Apache-2.0 and original parser attribution retained.
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)
-[![GitHub Release](https://img.shields.io/github/v/release/Hoffmann77/ha-dwd-precipitation)](https://github.com/Hoffmann77/ha-dwd-precipitation/releases/latest)
-[![GitHub Downloads](https://img.shields.io/github/downloads/Hoffmann77/ha-dwd-precipitation/total)](https://github.com/Hoffmann77/ha-dwd-precipitation/releases)
-[![Tests](https://github.com/Hoffmann77/ha-dwd-precipitation/actions/workflows/tests.yml/badge.svg)](https://github.com/Hoffmann77/ha-dwd-precipitation/actions/workflows/tests.yml)
-[![HACS Validate](https://github.com/Hoffmann77/ha-dwd-precipitation/actions/workflows/validate.yaml/badge.svg)](https://github.com/Hoffmann77/ha-dwd-precipitation/actions/workflows/validate.yaml)
+[![GitHub Release](https://img.shields.io/github/v/release/evgparen/ha-dwd-precipitation)](https://github.com/evgparen/ha-dwd-precipitation/releases/latest)
+[![GitHub Downloads](https://img.shields.io/github/downloads/evgparen/ha-dwd-precipitation/total)](https://github.com/evgparen/ha-dwd-precipitation/releases)
+[![Tests](https://github.com/evgparen/ha-dwd-precipitation/actions/workflows/tests.yml/badge.svg)](https://github.com/evgparen/ha-dwd-precipitation/actions/workflows/tests.yml)
+[![HACS Validate](https://github.com/evgparen/ha-dwd-precipitation/actions/workflows/validate.yaml/badge.svg)](https://github.com/evgparen/ha-dwd-precipitation/actions/workflows/validate.yaml)
 
 Radar-based precipitation forecasts and data from the German Weather Service (DWD).
 
@@ -46,9 +48,9 @@ If you do not have HACS installed yet visit https://hacs.xyz for installation in
 
 To add the this repository to HACS in your Home Assistant instance, use this Button:
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Hoffmann77&repository=ha-dwd-precipitation&category=Integration)
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=evgparen&repository=ha-dwd-precipitation&category=Integration)
 
-After installation, please restart Home Assistant. To add Power Insight to your Home Assistant instance, use this Button:
+After installation, please restart Home Assistant. To add DWD Precipitation to your Home Assistant instance, use this Button:
 
 [![Open your Home Assistant instance and start setting up a new integration.](https://my.home-assistant.io/badges/config_flow_start.svg)](https://my.home-assistant.io/redirect/config_flow_start/?domain=dwd_precipitation)
 
@@ -59,7 +61,7 @@ After installation, please restart Home Assistant. To add Power Insight to your 
 1. Go HACS integrations section.
 2. Click on the 3 dots in the top right corner.
 3. Select "Custom repositories"
-4. Add the URL (https://github.com/hoffmann77/ha-dwd-precipitation) to the repository.
+4. Add the URL (https://github.com/evgparen/ha-dwd-precipitation) to the repository.
 5. Select the integration category.
 6. Click the "ADD" button.
 7. Now you are able to download the integration
