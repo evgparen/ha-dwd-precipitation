@@ -84,6 +84,7 @@ class RadvorRS(BaseProductUpdateCoordinator):
     PRODUCT_KEY = "rs"
 
     RELEASE_INTERVAL = timedelta(minutes=5)
+    LATE_FILE_GRACE = timedelta(minutes=5)
 
     RELEASE_DELAY = timedelta(minutes=4, seconds=10)
 
@@ -167,6 +168,7 @@ class RadvorRV(BaseProductUpdateCoordinator):
     PRODUCT_KEY = "rv"
 
     RELEASE_INTERVAL = timedelta(minutes=5)
+    LATE_FILE_GRACE = timedelta(minutes=5)
 
     RELEASE_DELAY = timedelta(minutes=4, seconds=10)
 
@@ -317,6 +319,7 @@ class HymecNG(BaseProductUpdateCoordinator):
     PRODUCT_KEY = "hymecng"
 
     RELEASE_INTERVAL = timedelta(minutes=5)
+    LATE_FILE_GRACE = timedelta(minutes=5)
 
     # DWD publishes each file ~2 min after its nominal time; wait a little longer
     # so the coordinator does not fetch before it appears (checked by

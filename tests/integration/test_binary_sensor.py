@@ -26,6 +26,7 @@ def _make_binary(data, metadata=None, extra=False) -> DwdBinarySensorEntity:
     entity.entity_description = BINARY_SENSORS[0]
     entity.coordinator = SimpleNamespace(
         config_entry=SimpleNamespace(options={CONF_EXTRA_ATTRIBUTES: extra}),
+        fetch_status_attributes={},
         data=None
         if data is None
         else CoordinatorData(data=data, metadata=metadata or {}),

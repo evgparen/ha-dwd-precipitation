@@ -16,6 +16,7 @@ from homeassistant.components.sensor import (
 )
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
+    EntityCategory,
     UnitOfPrecipitationDepth,
     UnitOfTime,
     UnitOfVolumetricFlux,
@@ -259,7 +260,31 @@ async def async_setup_entry(
     ]
     entities.append(TimespanWithoutPrecipitationSensor(coordinators["rs"]))
 
+    for product in ("rs", "rv", "hymecng"):
+        entities.append(FetchStatusSensor(coordinators[product], SensorEntityDescription(
+            key=f"{product}_fetch_status", name=f"{product.upper()} data status",
+            device_class=SensorDeviceClass.ENUM,
+            entity_category=EntityCategory.DIAGNOSTIC,
+        )))
     async_add_entities(entities)
+
+
+class FetchStatusSensor(DwdCoordinatorEntity, SensorEntity):
+    """Keep diagnostics visible when weather entities become unavailable."""
+
+    _attr_options = ["current", "cached", "expired", "unavailable"]
+
+    @property
+    def available(self) -> bool:
+        return True
+
+    @property
+    def native_value(self) -> str:
+        return self.coordinator.fetch_status_attributes["dwd_fetch"]["status"]
+
+    @property
+    def extra_state_attributes(self) -> dict[str, Any]:
+        return self.coordinator.fetch_status_attributes["dwd_fetch"]
 
 
 class PrecipitationSensorEntity(DwdCoordinatorEntity, SensorEntity):
@@ -285,9 +310,9 @@ class PrecipitationSensorEntity(DwdCoordinatorEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return companion values and, when enabled, diagnostic metadata."""
         if self.coordinator.data is None:
-            return {}
+            return self.coordinator.fetch_status_attributes
 
-        attrs: dict[str, Any] = {}
+        attrs: dict[str, Any] = self.coordinator.fetch_status_attributes.copy()
 
         # Companion attributes (e.g. the start/end representation not used as the
         # state) are a feature, so they are always exposed.

@@ -1,7 +1,7 @@
 """Data update coordinator for the dwd precipitation integration.
 
-Modified in the maintained fork, 2026-09-12: preserve retries during stale
-failures and describe HTTP 404 without assuming its cause.
+Modified in the maintained fork, 2026-09-13: bounded late-file cache, explicit
+provenance and hard expiry; preserve retries after failures.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import aiohttp
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_NAME
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.event import async_track_time_interval
+from homeassistant.helpers.event import async_track_time_interval, async_call_later
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt as dt_util
 
@@ -108,6 +108,9 @@ class BaseProductUpdateCoordinator(DataUpdateCoordinator[CoordinatorData], ABC):
     # falls back to RELEASE_INTERVAL when not set.
     STALE_AFTER: ClassVar[timedelta] = timedelta()
 
+    # Bounded tolerance for late files; only fast radar products opt in.
+    LATE_FILE_GRACE: ClassVar[timedelta] = timedelta()
+
     USE_LOCAL_TIME: ClassVar[bool] = False
 
     def __init__(
@@ -130,6 +133,10 @@ class BaseProductUpdateCoordinator(DataUpdateCoordinator[CoordinatorData], ABC):
         self.coords = (lat, lon)
         self.curr_release: datetime | None = None
         self._fast_poll_unsub = None
+        self._expiry_unsub = None
+        self.last_fetch_error: str | None = None
+        self.last_fetch_attempt: datetime | None = None
+        self.config_entry.async_on_unload(self._cancel_expiry)
 
     # ------------------------------------------------------------------
     # Concrete helpers
@@ -154,6 +161,63 @@ class BaseProductUpdateCoordinator(DataUpdateCoordinator[CoordinatorData], ABC):
         threshold = self.curr_release + self.RELEASE_DELAY + tolerance
 
         return now > threshold
+
+    def _cache_deadline(self) -> datetime | None:
+        if self.curr_release is None:
+            return None
+        return (self.curr_release + self.RELEASE_DELAY
+                + (self.STALE_AFTER or self.RELEASE_INTERVAL)
+                + getattr(self, "LATE_FILE_GRACE", timedelta()))
+
+    @property
+    def fetch_status_attributes(self) -> dict[str, Any]:
+        """Always expose cache provenance, independently of optional metadata."""
+        now = dt_util.utcnow()
+        deadline = self._cache_deadline()
+        error = self.last_fetch_error
+        expired = deadline is not None and now >= deadline
+        status = "current"
+        if self.data is None or not self.last_update_success:
+            status = "unavailable"
+        elif error:
+            status = "expired" if expired else "cached"
+        return {"dwd_fetch": {
+            "status": status,
+            "source_release": self.curr_release.isoformat() if self.curr_release else None,
+            "source_age_seconds": max(0, round((now - self.curr_release).total_seconds()))
+                if self.curr_release else None,
+            "valid_until": deadline.isoformat() if deadline else None,
+            "last_attempt": self.last_fetch_attempt.isoformat() if self.last_fetch_attempt else None,
+            "error": error,
+        }}
+
+    @callback
+    def _cancel_expiry(self) -> None:
+        if self._expiry_unsub is not None:
+            self._expiry_unsub()
+            self._expiry_unsub = None
+
+    def _arm_expiry(self, now: datetime) -> None:
+        """Expire cached entities even if a retry request hangs across the limit."""
+        if self._expiry_unsub is not None:
+            return
+        deadline = self._cache_deadline()
+        if deadline is None:
+            return
+
+        @callback
+        def expire(_now) -> None:
+            self._expiry_unsub = None
+            if self.last_fetch_error and self.config_entry.options.get(
+                CONF_UNAVAILABLE_WHEN_STALE, True
+            ):
+                self.async_set_update_error(UpdateFailed(
+                    "Cached DWD data reached its fixed age limit; retries continue."
+                ))
+
+        self._expiry_unsub = async_call_later(
+            self.hass, max(0, (deadline - now).total_seconds()), expire
+        )
 
     @cached_property
     def track_time_change_args(self) -> list[dict]:
@@ -272,22 +336,28 @@ class BaseProductUpdateCoordinator(DataUpdateCoordinator[CoordinatorData], ABC):
         if self.curr_release is not None and self.curr_release >= latest_release:
             return self.data
 
+        self.last_fetch_attempt = now
         try:
             data, metadata = await self._fetch_and_parse(latest_release)
         except Exception as err:
             unavailable_when_stale = self.config_entry.options.get(
                 CONF_UNAVAILABLE_WHEN_STALE, True
             )
-            if self.data is None or (unavailable_when_stale and self._data_is_stale(now)):
-                # A first failure just past the next release boundary is already
-                # stale. Keep retrying so late files are not skipped forever.
-                self._start_fast_polling()
-                raise UpdateFailed(_describe_fetch_error(err, latest_release)) from err
-
-            # Data is still fresh enough — retry silently
+            self.last_fetch_error = _describe_fetch_error(err, latest_release)
+            # Evaluate after the request: a timeout must not extend cached validity.
+            checked_at = dt_util.utcnow()
+            deadline = BaseProductUpdateCoordinator._cache_deadline(self)
+            expired = deadline is None or checked_at >= deadline
             self._start_fast_polling()
+            if self.data is None or (unavailable_when_stale and expired):
+                raise UpdateFailed(self.last_fetch_error) from err
+            if unavailable_when_stale and getattr(self, "LATE_FILE_GRACE", timedelta()):
+                self._arm_expiry(checked_at)
             return self.data
 
+        self.last_fetch_error = None
+        if hasattr(self, "_cancel_expiry"):
+            self._cancel_expiry()
         self._stop_fast_polling()
         self.curr_release = latest_release
 

@@ -4,8 +4,8 @@
 
 > Maintained fork by [evgparen](https://github.com/evgparen), based on
 > [Hoffmann77/ha-dwd-precipitation](https://github.com/Hoffmann77/ha-dwd-precipitation).
-> Version **2026.9.12.1** keeps retrying late DWD files while preserving stale-data
-> protection. See [FORK.md](FORK.md) for changes, validation and migration.
+> Version **2026.9.13.1** bridges late radar files for a bounded five-minute grace
+> period, exposes cache status and source age, and keeps retrying. See [FORK.md](FORK.md) for changes, validation and migration.
 > Modified 2026-09-12; Apache-2.0 and original parser attribution retained.
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz)

@@ -53,6 +53,7 @@ def _make_sensor_with_desc(
     sensor.entity_description = desc
     sensor.coordinator = SimpleNamespace(
         config_entry=SimpleNamespace(options={CONF_EXTRA_ATTRIBUTES: extra}),
+        fetch_status_attributes={},
         data=CoordinatorData(data=data, metadata=metadata or {}),
     )
     return sensor

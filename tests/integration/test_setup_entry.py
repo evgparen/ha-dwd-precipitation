@@ -39,8 +39,8 @@ async def test_entry_setup_creates_sensors_with_correct_values(
     ts = datetime(2025, 6, 1, 12, 0, tzinfo=timezone.utc)
     rs_data = [1.5, 2.0, None]
     rs_meta = [
-        {"product": "ACRR", "datetime": ts, "lead_time_minutes": 0},
-        {"product": "ACRR", "datetime": ts, "lead_time_minutes": 60},
+        ProductMetadata("ACRR", ts, lead_time_minutes=0),
+        ProductMetadata("ACRR", ts, lead_time_minutes=60),
         {},
     ]
     rw_meta = {"producttype": "RW", "datetime": datetime(2025, 6, 1, 12, 50)}
@@ -156,3 +156,46 @@ async def test_entry_setup_creates_sensors_with_correct_values(
     state = hass.states.get(hymec_entry.entity_id)
     assert state is not None
     assert state.state == "snow"
+
+    # Real HA entity lifecycle: a failed request keeps the valid cache visible,
+    # then the dedicated deadline timer makes it unavailable even without a
+    # completed retry. Recovery exposes fresh state and clears diagnostics.
+    from datetime import timedelta
+    from homeassistant.util import dt as dt_util
+    from custom_components.dwd_precipitation import coordinator as coord_module
+    rv = coordinators["rv"]
+    now = dt_util.utcnow()
+    rv.curr_release = rv._get_latest_release(now) - timedelta(minutes=5)
+    callbacks = []
+    cancelled = []
+    def schedule(hass, delay, callback):
+        callbacks.append(callback)
+        return lambda: cancelled.append(True)
+    with patch.object(coord_module, "async_call_later", side_effect=schedule), patch.object(
+        rv, "_fetch_and_parse", new=AsyncMock(side_effect=TimeoutError("late"))
+    ):
+        await rv.async_refresh()
+        await hass.async_block_till_done()
+    state = hass.states.get(rain_entry.entity_id)
+    assert state.state == "on"
+    assert state.attributes["dwd_fetch"]["status"] == "cached"
+    assert len(callbacks) == 1
+    callbacks[0](None)
+    await hass.async_block_till_done()
+    state = hass.states.get(rain_entry.entity_id)
+    assert state.state == "unavailable"
+    diagnostic_entry = next(e for e in ent_reg.entities.values()
+                            if e.unique_id.endswith("rv_fetch_status"))
+    diagnostic = hass.states.get(diagnostic_entry.entity_id)
+    assert diagnostic.state == "unavailable"
+    assert diagnostic.attributes["source_release"]
+    assert diagnostic.attributes["error"]
+    with patch.object(rv, "_fetch_and_parse", new=AsyncMock(return_value=(rv_data,rv_meta))):
+        await rv.async_refresh()
+        await hass.async_block_till_done()
+    state = hass.states.get(rain_entry.entity_id)
+    assert state.state == "on"
+    assert state.attributes["dwd_fetch"]["status"] == "current"
+    assert state.attributes["dwd_fetch"]["error"] is None
+    assert rv._fast_poll_unsub is None
+    assert await hass.config_entries.async_unload(entry.entry_id)

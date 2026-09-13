@@ -76,11 +76,12 @@ class DwdBinarySensorEntity(DwdCoordinatorEntity, BinarySensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Expose the forecast start time and the full 5-minute RV forecast curve."""
         if self.coordinator.data is None or self.coordinator.data.data is None:
-            return {}
+            return self.coordinator.fetch_status_attributes
 
         data = self.coordinator.data.data
         start_at = data.get("start_at")
         attrs: dict[str, Any] = {
+            **self.coordinator.fetch_status_attributes,
             "minutes_until": data.get("start_in"),
             "at": start_at.isoformat() if start_at is not None else None,
         }
