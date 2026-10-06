@@ -2,7 +2,18 @@
 
 # DWD Precipitation (Reliable Fork)
 
-> Maintained by [evgparen](https://github.com/evgparen), based on
+## Maintenance ended — 2026-10-06
+
+This fork is no longer developed or maintained. **2026.10.6.2 is the final release.**
+There are no plans to merge further upstream updates or prepare upstream pull
+requests from this project. Existing releases remain available for reference.
+
+Ongoing development is focused exclusively on
+[Wolkenwart Regenradar](https://github.com/evgparen/wolkenwart-regenradar).
+It is a separate integration with its own domain, currently an early test release;
+it is not a drop-in replacement and does not migrate existing automations.
+
+> Previously maintained by [evgparen](https://github.com/evgparen), based on
 > [Hoffmann77/ha-dwd-precipitation](https://github.com/Hoffmann77/ha-dwd-precipitation).
 > Version **2026.10.6.2** integrates upstream startup, scheduling and expiry fixes,
 > preserves cache diagnostics and retains 60-second radar retries. See [FORK.md](FORK.md) for changes, validation and migration.

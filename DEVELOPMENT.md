@@ -1,6 +1,9 @@
 # Development guide
 
-Read FORK.md for the current behavior and release policy.
+This fork is no longer maintained as of 2026-10-06. Do not continue feature work
+or plan further upstream merges here. Development is focused on the separate
+Wolkenwart Regenradar project. Read FORK.md for the final release and historical
+validation details.
 
 One BaseProductUpdateCoordinator per DWD product owns scheduling, cache lifetime,
 retry and metadata. Products implement `_fetch_and_parse`. Entity availability

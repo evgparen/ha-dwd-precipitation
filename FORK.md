@@ -1,10 +1,21 @@
-# Maintained DWD Precipitation fork
+# DWD Precipitation fork — maintenance ended
 
-Release **2026.10.6.2**, maintained at https://github.com/evgparen/ha-dwd-precipitation.
+Final release **2026.10.6.2**, preserved at https://github.com/evgparen/ha-dwd-precipitation.
 Runtime changes from Hoffmann77 **2026.9.1** (`eeecff7`) are integrated selectively;
 original Apache-2.0 and embedded parser attribution are retained.
 
-## Current behavior
+## Maintenance ended — 2026-10-06
+
+This fork is no longer developed or maintained. **2026.10.6.2 is the final release.**
+There are no plans to merge further upstream updates or prepare upstream pull
+requests from this project. Existing releases remain available for reference.
+
+Ongoing development is focused exclusively on
+[Wolkenwart Regenradar](https://github.com/evgparen/wolkenwart-regenradar).
+It is a separate integration with its own domain, currently an early test release;
+it is not a drop-in replacement and does not migrate existing automations.
+
+## Final release behavior
 
 - Parallel startup: one failed product does not block working products. Total
   failure defers setup to HA and cancels discarded coordinator timers.
@@ -116,12 +127,9 @@ HACS should show only the fork installed for this domain. Roll back by restoring
 its predecessor's component directory and restarting Core, then repair the HACS
 installation source to match. Restore unrelated config/registries only if needed.
 
-Future upstream changes are reviewed and merged into this fork before release;
-site updates follow the fork's own release tags. GitHub Actions remains disabled
-for this fork: the publishing credential has repository access but no workflow
-scope. Inherited workflow files are unchanged. The release was validated locally
-with all test tiers; future workflow changes require an appropriately scoped
-credential. No inherited scheduled issue-posting job runs in this fork.
+No further upstream merges, feature work or maintenance releases are planned.
+GitHub Actions remains disabled. Inherited workflows are retained as historical
+source files; no scheduled issue-posting job runs in this repository.
 
 Site-specific rain closure schedules, stored plans, entity names, credentials,
 and site coordinates belong in each installation, not in this reusable source.
