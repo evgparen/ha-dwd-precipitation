@@ -1,6 +1,6 @@
 {
   "domain": "dwd_precipitation",
-  "name": "DWD Precipitation (Reliable Fork)",
+  "name": "Wolkenwart Regenradar",
   "codeowners": ["@evgparen"],
   "config_flow": true,
   "dependencies": [],
@@ -9,5 +9,5 @@
   "iot_class": "cloud_polling",
   "issue_tracker": "https://github.com/evgparen/ha-dwd-precipitation/issues",
   "requirements": ["numpy", "h5py>=3.11"],
-  "version": "2026.9.13.1"
+  "version": "2026.10.6.1"
 }

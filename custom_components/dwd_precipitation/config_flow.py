@@ -1,3 +1,4 @@
+# Modified 2026-10-06 for Wolkenwart Regenradar; see NOTICE.
 """Config flow for the DWD Precipitation integration."""
 
 from __future__ import annotations
@@ -16,6 +17,7 @@ from .const import (
     CONF_COORDS,
     CONF_EXTRA_ATTRIBUTES,
     CONF_UNAVAILABLE_WHEN_STALE,
+    DEFAULT_UNAVAILABLE_WHEN_STALE,
     CONF_PRECIPITATION_THRESHOLD,
     DEFAULT_PRECIPITATION_THRESHOLD,
     CONF_START_END_MODE,
@@ -51,7 +53,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ): selector.BooleanSelector(),
                 vol.Optional(
                     CONF_UNAVAILABLE_WHEN_STALE,
-                    default=self.config_entry.options.get(CONF_UNAVAILABLE_WHEN_STALE, True),
+                    default=self.config_entry.options.get(
+                        CONF_UNAVAILABLE_WHEN_STALE,
+                        DEFAULT_UNAVAILABLE_WHEN_STALE,
+                    ),
                 ): selector.BooleanSelector(),
                 vol.Optional(
                     CONF_PRECIPITATION_THRESHOLD,

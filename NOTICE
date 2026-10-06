@@ -1,4 +1,4 @@
-DWD Precipitation (Reliable Fork)
+Wolkenwart Regenradar
 Based on Hoffmann77/ha-dwd-precipitation, Apache License 2.0.
 Original license and embedded wradlib parser attribution are retained.
 
@@ -10,3 +10,9 @@ Modified 2026-09-12 by the evgparen fork:
 - documentation: fork instructions and validation results.
 
 Upstream authors do not maintain or endorse this fork.
+
+Modified 2026-10-06 by evgparen: integrated upstream 2026.9.1 scheduling,
+partial startup and German translations. Retained radar minute retries and
+cache diagnostics; enforced expiry at the exact deadline and after pending
+requests; cleaned up unsuccessful startup timers. Public display name changed
+to Wolkenwart Regenradar; existing internal identifiers retained.

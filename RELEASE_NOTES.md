@@ -1,16 +1,16 @@
-# 2026.9.12.1
+# 2026.10.6.1
 
-A DWD file arriving seconds after the scheduled request could leave sensors
-unavailable until the next five-minute cycle. Repeated publication delays could
-extend this to hours. The fork retains the existing 60-second retry on initial
-and stale failures while keeping source-age protection active. HTTP 404 messages
-now report the response without asserting that the DWD never published a file.
+Integrates upstream 2026.9.1 improvements while retaining reliable rain-protection
+retries and explicit cache diagnostics.
 
-Existing domain, sensor unique IDs, options and normal update schedules are
-preserved. No site-specific automation is included. Fork maintainer/version/links
-are separate from upstream; Apache-2.0 and embedded parser attribution retained.
+- Independent, parallel product startup; failed setup timers are cleaned up.
+- Correct local-day/DST scheduling and stable fetch offsets to spread DWD load.
+- Source-based expiry is armed on every successful fetch and enforced at the
+  exact boundary, including pending requests.
+- RS/RV/HymecNG retries remain at 60 seconds; hourly/daily retries use backoff.
+- Existing diagnostic and weather IDs preserved; German translations added.
+- Radar grace is now six minutes after the next release is due. Automations'
+  stricter source-age limits remain independent. No site settings are changed.
 
-Validation: 63 parser tests, 76 HA integration tests plus 5 subtests, 4 wradlib
-comparisons, and 5 real DWD source tests passed. HA integration tests passed on
-2026.8.0 and the deployment target 2026.9.1. No actuator calls were used.
-See FORK.md for migration and rollback steps.
+Validation: 184 HA integration/parser tests and 5 live DWD source/parser checks
+passed. No actuator calls. See FORK.md for behavior, migration and rollback.

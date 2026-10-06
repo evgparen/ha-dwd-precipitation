@@ -1,11 +1,33 @@
 # Maintained DWD Precipitation fork
 
-Release 2026.9.13.1, maintained at https://github.com/evgparen/ha-dwd-precipitation. Upstream is
-https://github.com/Hoffmann77/ha-dwd-precipitation, based on commit
-`9d6f0098df53edf20ec0478c0aa7dd6ea5a04a55` (2026.8.0rc1).
-The original Apache-2.0 license and embedded parser attribution are retained.
+Release **2026.10.6.1**, maintained at https://github.com/evgparen/ha-dwd-precipitation.
+Runtime changes from Hoffmann77 **2026.9.1** (`eeecff7`) are integrated selectively;
+original Apache-2.0 and embedded parser attribution are retained.
 
-## Bounded cache (2026.9.13.1)
+## Current behavior
+
+- Parallel startup: one failed product does not block working products. Total
+  failure defers setup to HA and cancels discarded coordinator timers.
+- Local-day scheduling handles timezone/DST for yesterday's rainfall.
+- Stable 0–30 second per-entry/product fetch offset spreads DWD load.
+- RS/RV/HymecNG retain exact **60-second retries**, including long outages.
+  Hourly/daily products use upstream backoff and retry jitter.
+- Fixed source-based expiry, armed immediately on success, enforced at the
+  exact deadline even during a pending request. A failed request cannot extend it.
+- Upstream overdue grace: six minutes after the next scheduled release is due,
+  30 minutes for the daily product. RS/RV maximum release age 15m10s–15m40s;
+  HymecNG 14m–14m30s. Automation-specific age limits still apply independently.
+- Existing diagnostic IDs and `dwd_fetch` fields remain: current/cached/expired/
+  unavailable, source_release, source_age_seconds, valid_until, last_attempt, error.
+- German translations; existing weather entity IDs, options and site automations
+  are preserved. Source timestamps and radar algorithms are unchanged.
+
+Validation: **184 integration/parser tests** with HA 2026.9.1 and **5 live DWD
+source/parser checks** passed. Tests cover in-flight expiry, disabled stale hiding,
+recovery, cancellation, bounded cache, product isolation and timezone behavior.
+Live source tests do not prove forecast accuracy or physical closure.
+
+## Historical behavior: 2026.9.13.1
 
 RS, RV and HymecNG keep their last successful product for **five extra minutes**
 after the previous stale boundary. This is a fixed deadline based on the source
@@ -58,7 +80,7 @@ cancellation, and timer cleanup. It runs with real Home Assistant imports in an
 isolated Python process, without network or actuator calls:
 
 ```sh
-PYTHONPATH=. python tests/integration/test_retry_regression.py
+python -m pytest tests/integration/test_retry_regression.py
 ```
 
 Validation on 2026-09-12:

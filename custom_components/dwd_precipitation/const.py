@@ -1,3 +1,4 @@
+# Modified 2026-10-06 for Wolkenwart Regenradar; see NOTICE.
 """Constants for the DWD Precipitation integration."""
 
 from homeassistant.const import Platform
@@ -18,6 +19,11 @@ CONF_COORDS = "coordinates"
 CONF_EXTRA_ATTRIBUTES = "extra_state_attributes"
 
 CONF_UNAVAILABLE_WHEN_STALE = "unavailable_when_stale"
+
+# Whether a value that is past its staleness deadline is hidden rather than
+# reported as-is. Hiding it is the safer default: a wrong number reads as a
+# fact, while an unavailable entity reads as a gap.
+DEFAULT_UNAVAILABLE_WHEN_STALE = True
 
 CONF_PRECIPITATION_THRESHOLD = "precipitation_threshold"
 

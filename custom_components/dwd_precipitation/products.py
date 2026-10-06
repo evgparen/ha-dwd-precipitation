@@ -1,3 +1,4 @@
+# Modified 2026-10-06 for Wolkenwart Regenradar; see NOTICE.
 """DWD radar products."""
 
 from __future__ import annotations
@@ -13,7 +14,11 @@ from typing import ClassVar
 
 import numpy as np
 
-from .coordinator import BaseProductUpdateCoordinator, ProductMetadata
+from .coordinator import (
+    DEFAULT_OVERDUE_GRACE,
+    BaseProductUpdateCoordinator,
+    ProductMetadata,
+)
 from .utils import async_get
 from .radar import (
     read_radolan_composite,
@@ -83,12 +88,20 @@ class RadvorRS(BaseProductUpdateCoordinator):
 
     PRODUCT_KEY = "rs"
 
+    FIXED_FAST_RETRY = True
+
+    PRODUCT_LABEL = "RS precipitation nowcast"
+
     RELEASE_INTERVAL = timedelta(minutes=5)
-    LATE_FILE_GRACE = timedelta(minutes=5)
 
     RELEASE_DELAY = timedelta(minutes=4, seconds=10)
 
     RELEASE_OFFSET = timedelta()
+
+    # 6 min outlasts one whole 5-min cycle: each grid is a 60-minute
+    # accumulation, so a value one release old is still a fair answer to
+    # "how much fell in the last hour".
+    OVERDUE_GRACE = DEFAULT_OVERDUE_GRACE
 
     @cached_property
     def index(self) -> tuple[int, int]:
@@ -167,12 +180,19 @@ class RadvorRV(BaseProductUpdateCoordinator):
 
     PRODUCT_KEY = "rv"
 
+    FIXED_FAST_RETRY = True
+
+    PRODUCT_LABEL = "RV precipitation forecast"
+
     RELEASE_INTERVAL = timedelta(minutes=5)
-    LATE_FILE_GRACE = timedelta(minutes=5)
 
     RELEASE_DELAY = timedelta(minutes=4, seconds=10)
 
     RELEASE_OFFSET = timedelta()
+
+    # A 2-hour forecast does not turn wrong in five minutes, so keep trying
+    # across one whole missed release before dropping the entities.
+    OVERDUE_GRACE = DEFAULT_OVERDUE_GRACE
 
     @cached_property
     def index(self) -> tuple[int, int]:
@@ -318,8 +338,11 @@ class HymecNG(BaseProductUpdateCoordinator):
 
     PRODUCT_KEY = "hymecng"
 
+    FIXED_FAST_RETRY = True
+
+    PRODUCT_LABEL = "HymecNG precipitation type"
+
     RELEASE_INTERVAL = timedelta(minutes=5)
-    LATE_FILE_GRACE = timedelta(minutes=5)
 
     # DWD publishes each file ~2 min after its nominal time; wait a little longer
     # so the coordinator does not fetch before it appears (checked by
@@ -327,6 +350,10 @@ class HymecNG(BaseProductUpdateCoordinator):
     RELEASE_DELAY = timedelta(minutes=3)
 
     RELEASE_OFFSET = timedelta()
+
+    # Precipitation type changes slowly enough that a value one release old
+    # is still informative.
+    OVERDUE_GRACE = DEFAULT_OVERDUE_GRACE
 
     @cached_property
     def index(self) -> tuple[int, int]:
@@ -431,11 +458,17 @@ class RadolanRW(RadolanProduct):
 
     PRODUCT_KEY = "rw"
 
+    PRODUCT_LABEL = "RW hourly precipitation"
+
     RELEASE_INTERVAL = timedelta(hours=1)
 
     RELEASE_DELAY = timedelta(minutes=28)
 
     RELEASE_OFFSET = timedelta(minutes=50)
+
+    # An hourly total that is an hour behind is misreported rather than merely
+    # old, so give the missing file only the default few minutes.
+    OVERDUE_GRACE = DEFAULT_OVERDUE_GRACE
 
     def _get_url(self, ts: datetime) -> str:
         """Return the bz2 URL."""
@@ -450,11 +483,16 @@ class RadolanSF(RadolanProduct):
 
     PRODUCT_KEY = "sf"
 
+    PRODUCT_LABEL = "SF 24-hour precipitation"
+
     RELEASE_INTERVAL = timedelta(hours=1)
 
     RELEASE_DELAY = timedelta(minutes=28)
 
     RELEASE_OFFSET = timedelta(minutes=50)
+
+    # Same reasoning as RW: the window it reports moves with the release.
+    OVERDUE_GRACE = DEFAULT_OVERDUE_GRACE
 
     def _get_url(self, ts: datetime) -> str:
         """Return the bz2 URL."""
@@ -469,6 +507,8 @@ class RadolanSFLastYesterday(RadolanSF):
 
     PRODUCT_KEY = "sf_2350"
 
+    PRODUCT_LABEL = "SF daily precipitation total"
+
     RELEASE_INTERVAL = timedelta(hours=24)
 
     RELEASE_DELAY = timedelta(minutes=28)
@@ -476,3 +516,11 @@ class RadolanSFLastYesterday(RadolanSF):
     RELEASE_OFFSET = timedelta(hours=23, minutes=50)
 
     USE_LOCAL_TIME = True
+
+    # Only one release a day, so a retry storm would be pointless — let the
+    # fast-poll backoff settle three times slower than the other products, and
+    # give the file correspondingly longer to turn up before writing off a
+    # total that will not be replaced until tomorrow either way.
+    MAX_FAST_POLL_INTERVAL = timedelta(minutes=15)
+
+    OVERDUE_GRACE = timedelta(minutes=30)
