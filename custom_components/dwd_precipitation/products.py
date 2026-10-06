@@ -1,4 +1,4 @@
-# Modified 2026-10-06 for Wolkenwart Regenradar; see NOTICE.
+# Modified 2026-10-06 for DWD Precipitation (Reliable Fork); see NOTICE.
 """DWD radar products."""
 
 from __future__ import annotations

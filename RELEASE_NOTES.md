@@ -1,3 +1,10 @@
+# 2026.10.6.2
+
+Restore the independent display name **DWD Precipitation (Reliable Fork)**.
+Only branding, release metadata and source comments changed. The reliability
+improvements from 2026.10.6.1 remain in place. Existing entity IDs, integration
+domain, configuration and HACS repository are unchanged.
+
 # 2026.10.6.1
 
 Integrates upstream 2026.9.1 improvements while retaining reliable rain-protection

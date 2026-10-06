@@ -1,6 +1,6 @@
 # Maintained DWD Precipitation fork
 
-Release **2026.10.6.1**, maintained at https://github.com/evgparen/ha-dwd-precipitation.
+Release **2026.10.6.2**, maintained at https://github.com/evgparen/ha-dwd-precipitation.
 Runtime changes from Hoffmann77 **2026.9.1** (`eeecff7`) are integrated selectively;
 original Apache-2.0 and embedded parser attribution are retained.
 

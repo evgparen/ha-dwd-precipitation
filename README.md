@@ -1,10 +1,10 @@
 
 
-# Wolkenwart Regenradar
+# DWD Precipitation (Reliable Fork)
 
 > Maintained by [evgparen](https://github.com/evgparen), based on
 > [Hoffmann77/ha-dwd-precipitation](https://github.com/Hoffmann77/ha-dwd-precipitation).
-> Version **2026.10.6.1** integrates upstream startup, scheduling and expiry fixes,
+> Version **2026.10.6.2** integrates upstream startup, scheduling and expiry fixes,
 > preserves cache diagnostics and retains 60-second radar retries. See [FORK.md](FORK.md) for changes, validation and migration.
 > Modified 2026-10-06; Apache-2.0 and original parser attribution retained.
 
